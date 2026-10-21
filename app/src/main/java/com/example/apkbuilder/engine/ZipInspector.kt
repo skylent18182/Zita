@@ -85,7 +85,6 @@ object ZipInspector {
             }
         }
 
-        // Parse extracted manifest and build.gradle
         val packageName = extractPackageName(manifestContent, gradleContent)
         val permissions = extractPermissions(manifestContent)
         val activities = extractActivities(manifestContent)

@@ -10,7 +10,6 @@ import kotlinx.coroutines.delay
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
-import java.io.InputStream
 import java.security.MessageDigest
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -64,14 +63,13 @@ object ApkPackagerEngine {
 
         // Step 2: Binary XML Manifest and Resource Compilation
         onProgress("Ressourcen kompilieren", 0.45f, "AXML Binärmanifest & Dalvik Bytecode erstellen")
-        log("[TASK] Kompiliere Android Binary XML (AXML) & dalvik bytecode (classes.dex)...", LogType.COMMAND)
+        log("[TASK] Kompiliere Android Binary XML (AXML) & Dalvik Bytecode (classes.dex)...", LogType.COMMAND)
         delay(300)
 
         // Step 3: Package Container and Sign with Android Keystore
         onProgress("APK Assemblierung", 0.70f, "APK-Archiv erstellen & Zipalign anwenden")
         log("[TASK] Assemblieren des APK-Archivs mit Zipalign 4-Byte Grenzen...", LogType.COMMAND)
 
-        // Locate real pre-compiled APK base template from assets
         var templateCopied = false
         try {
             val assetList = context.assets.list("") ?: emptyArray()
@@ -89,7 +87,6 @@ object ApkPackagerEngine {
         }
 
         if (!templateCopied || outputFile.length() == 0L) {
-            // Fallback: check if project itself has a pre-built apk in outputs
             val projectApk = projectDir.walkTopDown().firstOrNull { it.extension == "apk" }
             if (projectApk != null) {
                 projectApk.copyTo(outputFile, overwrite = true)

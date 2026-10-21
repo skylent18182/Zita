@@ -1,8 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item
-        android:width="66dp"
-        android:height="66dp"
-        android:drawable="@drawable/apk_builder_icon_1792569293762"
-        android:gravity="center" />
-</layer-list>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Android / APK Box Graphic centered in 66dp safe zone (21 to 87) -->
+    <group
+        android:translateX="24"
+        android:translateY="24">
+        <!-- Cube/Box back -->
+        <path
+            android:fillColor="#10B981"
+            android:pathData="M30,5 L55,19 L30,33 L5,19 Z" />
+        <path
+            android:fillColor="#059669"
+            android:pathData="M5,22 L30,36 L30,55 L5,41 Z" />
+        <path
+            android:fillColor="#34D399"
+            android:pathData="M30,36 L55,22 L55,41 L30,55 Z" />
+        <!-- Android Antennae & Sparkle -->
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M23,12 L19,6 M37,12 L41,6"
+            android:strokeColor="#FFFFFF"
+            android:strokeWidth="2"
+            android:strokeLineCap="round" />
+        <!-- Small gear or check -->
+        <path
+            android:fillColor="#090D16"
+            android:pathData="M27,24 L29,26 L34,21"
+            android:strokeColor="#FFFFFF"
+            android:strokeWidth="2.5"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round" />
+    </group>
+</vector>

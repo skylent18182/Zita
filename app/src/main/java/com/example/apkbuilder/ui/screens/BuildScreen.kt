@@ -46,7 +46,6 @@ fun BuildScreen(
         else logs.filter { it.message.contains(filterText, ignoreCase = true) }
     }
 
-    // Auto-scroll when new logs arrive
     LaunchedEffect(logs.size) {
         if (logs.isNotEmpty()) {
             listState.animateScrollToItem(logs.size - 1)
@@ -58,7 +57,6 @@ fun BuildScreen(
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        // Top Toolbar
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
@@ -108,7 +106,6 @@ fun BuildScreen(
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        // Search Bar
         OutlinedTextField(
             value = filterText,
             onValueChange = { filterText = it },
@@ -130,7 +127,6 @@ fun BuildScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Terminal Window
         Box(
             modifier = Modifier
                 .weight(1f)

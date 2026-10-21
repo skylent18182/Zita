@@ -2,6 +2,7 @@ package com.example.apkbuilder.ui.screens
 
 import android.content.Context
 import android.widget.Toast
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -13,9 +14,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.apkbuilder.viewmodel.ApkBuilderViewModel
 import java.io.File
 
@@ -36,15 +39,107 @@ fun SettingsScreen(
     ) {
         item {
             Text(
-                "Einstellungen & Build-Engine",
+                "Einstellungen & App-Export",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
             Text(
-                "Konfiguration für APK-Generierung und Signatur",
+                "Optionen für APK-Generierung und App-Sicherung",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+        }
+
+        // Feature Card: App selbst in Downloads speichern (User Request)
+        item {
+            Card(
+                shape = RoundedCornerShape(18.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .border(2.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(18.dp))
+            ) {
+                Column(modifier = Modifier.padding(20.dp)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(44.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.DownloadForOffline,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(26.dp)
+                            )
+                        }
+                        Column {
+                            Text(
+                                "V3 Builder App selbst speichern",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                "Speichert diese App als 'Apkbuilderv3.apk' in Downloads",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    Text(
+                        "Kopiert die laufende Apkbuilderv3-App direkt in das öffentliche Download-Verzeichnis deines Smartphones, damit du die Installationsdatei sofort griffbereit hast.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        lineHeight = 18.sp
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Button(
+                        onClick = { viewModel.exportSelfApk(context) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary
+                        )
+                    ) {
+                        Icon(Icons.Default.Download, contentDescription = null, modifier = Modifier.size(20.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            "In Downloads speichern",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp,
+                            maxLines = 1,
+                            softWrap = false
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    OutlinedButton(
+                        onClick = { viewModel.shareSelfApk(context) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(44.dp),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("App teilen / senden", fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+                    }
+                }
+            }
         }
 
         // Keystore Card
@@ -64,7 +159,7 @@ fun SettingsScreen(
                     }
                     Spacer(modifier = Modifier.height(10.dp))
                     Text(
-                        "APKs werden automatisch mit einem generierten RSA-2048 Bit Schlüssel und SHA-256 Digest nach dem Standard-Android v1 (JAR) Signaturschema signiert, damit sie auf Geräten installiert werden können.",
+                        "APKs werden automatisch mit einem RSA-2048 Bit Schlüssel und SHA-256 Digest nach dem Standard-Android v1 (JAR) & v2 Signaturschema signiert, damit sie auf allen Geräten installiert werden können.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -167,10 +262,10 @@ fun SettingsScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(18.dp)) {
-                    Text("Über APK Studio", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    Text("Über Apkbuilderv3", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
-                        "Version 1.0.0 • On-Device APK Compiler Engine\nKomplett offline nutzbar, keine Registrierung oder Cloud erforderlich.",
+                        "Version 3.0.0 • On-Device Android APK Compiler Engine\nKomplett offline nutzbar, keine Registrierung oder Cloud erforderlich.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

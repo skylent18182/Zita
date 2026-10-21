@@ -3,8 +3,6 @@ package com.example.apkbuilder.ui.screens
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -20,7 +18,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -94,7 +91,7 @@ fun HomeScreen(
                         }
                         Column {
                             Text(
-                                text = "ZIP zu APK Builder",
+                                text = "Apkbuilderv3",
                                 style = MaterialTheme.typography.titleLarge.copy(
                                     fontWeight = FontWeight.Bold,
                                     letterSpacing = (-0.5).sp
@@ -200,6 +197,7 @@ fun HomeScreen(
                 item {
                     BuildSuccessCard(
                         apk = state.apk,
+                        onDownload = { viewModel.downloadApk(context, state.apk) },
                         onInstall = { viewModel.installApk(context, state.apk) },
                         onShare = { viewModel.shareApk(context, state.apk) },
                         onBuildAgain = { viewModel.startBuild() }
@@ -385,7 +383,6 @@ fun ProjectInfoCard(
             HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
             Spacer(modifier = Modifier.height(14.dp))
 
-            // Details grid
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 InfoTag(label = "Min SDK", value = info.minSdk)
                 InfoTag(label = "Target SDK", value = info.targetSdk)
@@ -582,6 +579,7 @@ fun CompilingCard(
 @Composable
 fun BuildSuccessCard(
     apk: BuiltApk,
+    onDownload: () -> Unit,
     onInstall: () -> Unit,
     onShare: () -> Unit,
     onBuildAgain: () -> Unit
@@ -640,33 +638,48 @@ fun BuildSuccessCard(
 
             Spacer(modifier = Modifier.height(18.dp))
 
+            // Primary action: Download APK via system download manager
+            Button(
+                onClick = onDownload,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                )
+            ) {
+                Icon(Icons.Default.Download, contentDescription = null, modifier = Modifier.size(20.dp))
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Download APK", fontWeight = FontWeight.Bold, fontSize = 15.sp)
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Button(
+                OutlinedButton(
                     onClick = onInstall,
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(12.dp),
-                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 12.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = MaterialTheme.colorScheme.onPrimary
-                    )
+                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 10.dp)
                 ) {
-                    Icon(Icons.Default.InstallMobile, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text("Installieren", fontWeight = FontWeight.Bold, maxLines = 1, softWrap = false, fontSize = 13.sp)
+                    Icon(Icons.Default.InstallMobile, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Installieren", fontWeight = FontWeight.SemiBold, maxLines = 1, softWrap = false, fontSize = 13.sp)
                 }
 
                 OutlinedButton(
                     onClick = onShare,
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(12.dp),
-                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 12.dp)
+                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 10.dp)
                 ) {
-                    Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(modifier = Modifier.width(6.dp))
+                    Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
                     Text("Teilen", fontWeight = FontWeight.SemiBold, maxLines = 1, softWrap = false, fontSize = 13.sp)
                 }
             }

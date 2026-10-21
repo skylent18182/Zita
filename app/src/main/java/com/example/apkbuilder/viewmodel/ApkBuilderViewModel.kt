@@ -1,10 +1,14 @@
 package com.example.apkbuilder.viewmodel
 
 import android.app.Application
+import android.app.DownloadManager
+import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
+import android.os.Environment
+import android.provider.MediaStore
 import android.provider.Settings
 import android.widget.Toast
 import androidx.core.content.FileProvider
@@ -51,7 +55,6 @@ class ApkBuilderViewModel(application: Application) : AndroidViewModel(applicati
 
     init {
         loadExistingApks()
-        // Pre-load sample project automatically so the user immediately has a functional demo ready to build!
         loadSampleProject()
     }
 
@@ -84,7 +87,6 @@ class ApkBuilderViewModel(application: Application) : AndroidViewModel(applicati
                     currentProjectDir = projectDir
                     currentProjectInfo = info
 
-                    // Configure default output name
                     val defaultName = "${info.projectName.lowercase().replace(" ", "-")}.apk"
                     _buildOptions.value = _buildOptions.value.copy(outputFileName = defaultName)
                 }
@@ -184,7 +186,6 @@ class ApkBuilderViewModel(application: Application) : AndroidViewModel(applicati
                 return
             }
 
-            // On Android 8.0+ (Oreo), verify permission to install unknown apps
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 if (!context.packageManager.canRequestPackageInstalls()) {
                     Toast.makeText(
@@ -243,6 +244,146 @@ class ApkBuilderViewModel(application: Application) : AndroidViewModel(applicati
         }
     }
 
+    fun downloadApk(context: Context, apk: BuiltApk) {
+        try {
+            val file = File(apk.filePath)
+            if (!file.exists()) {
+                Toast.makeText(context, "APK-Datei nicht gefunden.", Toast.LENGTH_SHORT).show()
+                return
+            }
+
+            var downloadSuccess = false
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                val contentValues = ContentValues().apply {
+                    put(MediaStore.Downloads.DISPLAY_NAME, apk.fileName)
+                    put(MediaStore.Downloads.MIME_TYPE, "application/vnd.android.package-archive")
+                    put(MediaStore.Downloads.IS_PENDING, 1)
+                }
+                val uri = context.contentResolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
+                if (uri != null) {
+                    context.contentResolver.openOutputStream(uri)?.use { out ->
+                        FileInputStream(file).use { inp -> inp.copyTo(out) }
+                    }
+                    contentValues.clear()
+                    contentValues.put(MediaStore.Downloads.IS_PENDING, 0)
+                    context.contentResolver.update(uri, contentValues, null, null)
+                    downloadSuccess = true
+                }
+            } else {
+                @Suppress("DEPRECATION")
+                val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                if (!downloadsDir.exists()) downloadsDir.mkdirs()
+                val destFile = File(downloadsDir, apk.fileName)
+                file.copyTo(destFile, overwrite = true)
+                val dm = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+                dm.addCompletedDownload(
+                    apk.fileName,
+                    "Fertige APK (${apk.packageName})",
+                    true,
+                    "application/vnd.android.package-archive",
+                    destFile.absolutePath,
+                    destFile.length(),
+                    true
+                )
+                downloadSuccess = true
+            }
+
+            if (downloadSuccess) {
+                addLog("APK in System-Download-Ordner übertragen: ${apk.fileName}", LogType.SUCCESS)
+                Toast.makeText(context, "Download erfolgreich: '${apk.fileName}' in Downloads gespeichert!", Toast.LENGTH_LONG).show()
+            } else {
+                Toast.makeText(context, "Download fehlgeschlagen.", Toast.LENGTH_SHORT).show()
+            }
+        } catch (e: Exception) {
+            Toast.makeText(context, "Download-Fehler: ${e.message}", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    // Export the running V3 Builder app itself to the device's public Download directory
+    fun exportSelfApk(context: Context) {
+        try {
+            val selfApkFile = File(context.applicationInfo.sourceDir)
+            if (!selfApkFile.exists() || selfApkFile.length() == 0L) {
+                Toast.makeText(context, "Eigene APK-Datei konnte nicht ermittelt werden.", Toast.LENGTH_SHORT).show()
+                return
+            }
+
+            val fileName = "Apkbuilderv3.apk"
+            var downloadSuccess = false
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                val contentValues = ContentValues().apply {
+                    put(MediaStore.Downloads.DISPLAY_NAME, fileName)
+                    put(MediaStore.Downloads.MIME_TYPE, "application/vnd.android.package-archive")
+                    put(MediaStore.Downloads.IS_PENDING, 1)
+                }
+                val uri = context.contentResolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
+                if (uri != null) {
+                    context.contentResolver.openOutputStream(uri)?.use { out ->
+                        FileInputStream(selfApkFile).use { inp -> inp.copyTo(out) }
+                    }
+                    contentValues.clear()
+                    contentValues.put(MediaStore.Downloads.IS_PENDING, 0)
+                    context.contentResolver.update(uri, contentValues, null, null)
+                    downloadSuccess = true
+                }
+            } else {
+                @Suppress("DEPRECATION")
+                val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                if (!downloadsDir.exists()) downloadsDir.mkdirs()
+                val destFile = File(downloadsDir, fileName)
+                selfApkFile.copyTo(destFile, overwrite = true)
+                val dm = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+                dm.addCompletedDownload(
+                    fileName,
+                    "Apkbuilderv3 App Export",
+                    true,
+                    "application/vnd.android.package-archive",
+                    destFile.absolutePath,
+                    destFile.length(),
+                    true
+                )
+                downloadSuccess = true
+            }
+
+            if (downloadSuccess) {
+                addLog("Apkbuilderv3 App selbst in Download-Ordner gespeichert (${ApkPackagerEngine.formatBytes(selfApkFile.length())})", LogType.SUCCESS)
+                Toast.makeText(context, "Erfolg: 'Apkbuilderv3.apk' wurde im Download-Verzeichnis gespeichert!", Toast.LENGTH_LONG).show()
+            } else {
+                Toast.makeText(context, "Export fehlgeschlagen.", Toast.LENGTH_SHORT).show()
+            }
+        } catch (e: Exception) {
+            Toast.makeText(context, "Export-Fehler: ${e.message}", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    // Share the running V3 Builder app APK directly via system share sheet
+    fun shareSelfApk(context: Context) {
+        try {
+            val selfApkFile = File(context.applicationInfo.sourceDir)
+            if (!selfApkFile.exists()) {
+                Toast.makeText(context, "Eigene APK-Datei nicht gefunden.", Toast.LENGTH_SHORT).show()
+                return
+            }
+
+            val apkUri = FileProvider.getUriForFile(
+                context,
+                "${context.packageName}.fileprovider",
+                selfApkFile
+            )
+
+            val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                type = "application/vnd.android.package-archive"
+                putExtra(Intent.EXTRA_STREAM, apkUri)
+                putExtra(Intent.EXTRA_SUBJECT, "Apkbuilderv3.apk")
+                flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+            }
+            context.startActivity(Intent.createChooser(shareIntent, "Apkbuilderv3 teilen"))
+        } catch (e: Exception) {
+            Toast.makeText(context, "Fehler beim Teilen: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     fun deleteApk(apk: BuiltApk) {
         val file = File(apk.filePath)
         if (file.exists()) file.delete()
@@ -273,7 +414,7 @@ class ApkBuilderViewModel(application: Application) : AndroidViewModel(applicati
                 BuiltApk(
                     fileName = file.name,
                     packageName = "com.android.app",
-                    versionName = "1.0",
+                    versionName = "3.0",
                     fileSizeBytes = file.length(),
                     filePath = file.absolutePath,
                     timestamp = file.lastModified(),

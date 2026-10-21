@@ -58,7 +58,7 @@ private val LightColorScheme = lightColorScheme(
 @Composable
 fun ApkBuilderTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = false, // Keep tailored brand styling for build studio
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {

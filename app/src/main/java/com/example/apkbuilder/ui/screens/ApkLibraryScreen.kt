@@ -130,6 +130,7 @@ fun ApkLibraryScreen(
                 items(builtApks, key = { it.id }) { apk ->
                     ApkCardItem(
                         apk = apk,
+                        onDownload = { viewModel.downloadApk(context, apk) },
                         onInstall = { viewModel.installApk(context, apk) },
                         onShare = { viewModel.shareApk(context, apk) },
                         onDelete = { apkToDelete = apk }
@@ -167,6 +168,7 @@ fun ApkLibraryScreen(
 @Composable
 fun ApkCardItem(
     apk: BuiltApk,
+    onDownload: () -> Unit,
     onInstall: () -> Unit,
     onShare: () -> Unit,
     onDelete: () -> Unit
@@ -219,12 +221,21 @@ fun ApkCardItem(
                     }
                 }
 
-                IconButton(onClick = onDelete) {
-                    Icon(
-                        imageVector = Icons.Default.DeleteOutline,
-                        contentDescription = "Löschen",
-                        tint = MaterialTheme.colorScheme.outline
-                    )
+                Row {
+                    IconButton(onClick = onDownload) {
+                        Icon(
+                            imageVector = Icons.Default.Download,
+                            contentDescription = "In Downloads speichern",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    IconButton(onClick = onDelete) {
+                        Icon(
+                            imageVector = Icons.Default.DeleteOutline,
+                            contentDescription = "Löschen",
+                            tint = MaterialTheme.colorScheme.outline
+                        )
+                    }
                 }
             }
 
@@ -268,32 +279,43 @@ fun ApkCardItem(
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Button(
-                    onClick = onInstall,
-                    modifier = Modifier.weight(1f),
+                    onClick = onDownload,
+                    modifier = Modifier.weight(1.1f),
                     shape = RoundedCornerShape(10.dp),
-                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 10.dp),
+                    contentPadding = PaddingValues(horizontal = 6.dp, vertical = 10.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primary,
                         contentColor = MaterialTheme.colorScheme.onPrimary
                     )
                 ) {
+                    Icon(Icons.Default.Download, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Download", fontWeight = FontWeight.Bold, maxLines = 1, softWrap = false, fontSize = 12.sp)
+                }
+
+                OutlinedButton(
+                    onClick = onInstall,
+                    modifier = Modifier.weight(1.1f),
+                    shape = RoundedCornerShape(10.dp),
+                    contentPadding = PaddingValues(horizontal = 6.dp, vertical = 10.dp)
+                ) {
                     Icon(Icons.Default.InstallMobile, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("Installieren", fontWeight = FontWeight.Bold, maxLines = 1, softWrap = false, fontSize = 13.sp)
+                    Text("Installieren", fontWeight = FontWeight.SemiBold, maxLines = 1, softWrap = false, fontSize = 12.sp)
                 }
 
                 OutlinedButton(
                     onClick = onShare,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(0.9f),
                     shape = RoundedCornerShape(10.dp),
-                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 10.dp)
+                    contentPadding = PaddingValues(horizontal = 4.dp, vertical = 10.dp)
                 ) {
                     Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(16.dp))
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("Teilen", fontWeight = FontWeight.SemiBold, maxLines = 1, softWrap = false, fontSize = 13.sp)
+                    Spacer(modifier = Modifier.width(2.dp))
+                    Text("Teilen", fontWeight = FontWeight.SemiBold, maxLines = 1, softWrap = false, fontSize = 12.sp)
                 }
             }
         }

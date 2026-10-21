@@ -54,7 +54,7 @@ data class BuiltApk(
 )
 
 data class BuildOptions(
-    val outputFileName: String = "app-release.apk",
+    val outputFileName: String = "Apkbuilderv3.apk",
     val isRelease: Boolean = false,
     val signWithDebugKey: Boolean = true,
     val zipalign: Boolean = true,
